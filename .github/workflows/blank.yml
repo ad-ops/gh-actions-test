@@ -30,7 +30,7 @@ jobs:
       # Run steps that make changes to the local repo here.
       - name: Write to a file
         run: |
-          "Hello, world!" > hello.txt
+          echo "Hello, world!" > hello.txt
 
       # Commit all changed files back to the repository
       - uses: planetscale/ghcommit-action@v0.2.0
