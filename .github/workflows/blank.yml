@@ -30,7 +30,7 @@ jobs:
       # Run steps that make changes to the local repo here.
       - name: Write to a file
         run: |
-          "Hello, world!" > hello.txt
+          echo "Hello, world!" >> README.md
 
       # Commit all changed files back to the repository
       - uses: planetscale/ghcommit-action@v0.2.0
@@ -38,6 +38,6 @@ jobs:
           commit_message: "🤖 writing"
           repo: ${{ github.repository }}
           branch: ${{ github.head_ref || github.ref_name }}
-          file_pattern: '*.txt'
+          file_pattern: 'README.md'
         env:
           GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
