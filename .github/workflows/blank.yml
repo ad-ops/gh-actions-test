@@ -2,29 +2,42 @@
 
 name: CI
 
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
-  push:
-    branches: [ "main" ]
+  # NOTE: Need to run on a PR so that the ${{ github.head_ref }} (branch) is non-null
   pull_request:
     branches: [ "main" ]
+    types:
+      - opened
+      - synchronize
+      - reopened
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  add-file:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+    steps:
+      - uses: actions/checkout@v4
+      # Include the pull request ref in the checkout action to prevent merge commit
+      # https://github.com/actions/checkout?tab=readme-ov-file#checkout-pull-request-head-commit-instead-of-merge-commit
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      # Run steps that make changes to the local repo here.
+      - name: Write to a file
+        run: |
+          "Hello, world!" > hello.txt
+
+      # Commit all changed files back to the repository
+      - uses: planetscale/ghcommit-action@v0.2.0
+        with:
+          commit_message: "🤖 writing"
+          repo: ${{ github.repository }}
+          branch: ${{ github.head_ref || github.ref_name }}
+          file_pattern: '*.txt'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
